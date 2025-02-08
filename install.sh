@@ -12,46 +12,6 @@ log_error() {
     printf "[ERROR] %s\n" "$1" >&2
 }
 
-# ########################################
-# # Remove Windows Paths in WSL Environment
-# ########################################
-# fix_windows_path() {
-#     # Check for WSL by looking for "microsoft" in /proc/version
-#     if grep -qi microsoft /proc/version 2>/dev/null; then
-#         log_info "WSL environment detected. Removing Windows paths from PATH."
-#         export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '^/mnt/c' | paste -sd ':' -)
-#         log_info "New PATH: $PATH"
-#     fi
-# }
-
-########################################
-# Append nvm Initialization to the Correct Shell RC File
-########################################
-ensure_nvm_in_shell() {
-    local shell_rc=""
-    if [[ "$SHELL" == *"zsh"* ]]; then
-        shell_rc="$HOME/.zshrc"
-    elif [[ "$SHELL" == *"bash"* ]]; then
-        shell_rc="$HOME/.bashrc"
-    else
-        shell_rc="$HOME/.profile"
-    fi
-
-    if [ -f "$shell_rc" ]; then
-        if ! grep -q 'export NVM_DIR="$HOME/.nvm"' "$shell_rc"; then
-            log_info "Appending nvm initialization to $shell_rc"
-            {
-                echo ''
-                echo 'export NVM_DIR="$HOME/.nvm"'
-                echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm'
-            } >> "$shell_rc"
-        fi
-    else
-        log_info "$shell_rc does not exist, creating it with nvm initialization."
-        echo 'export NVM_DIR="$HOME/.nvm"' > "$shell_rc"
-        echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm' >> "$shell_rc"
-    fi
-}
 
 ########################################
 # OS Detection
@@ -229,6 +189,35 @@ install_nvm_and_node() {
     echo ""
 }
 
+########################################
+# Append nvm Initialization to the Correct Shell RC File
+########################################
+ensure_nvm_in_shell() {
+    local shell_rc=""
+    if [[ "$SHELL" == *"zsh"* ]]; then
+        shell_rc="$HOME/.zshrc"
+    elif [[ "$SHELL" == *"bash"* ]]; then
+        shell_rc="$HOME/.bashrc"
+    else
+        shell_rc="$HOME/.profile"
+    fi
+
+    if [ -f "$shell_rc" ]; then
+        if ! grep -q 'export NVM_DIR="$HOME/.nvm"' "$shell_rc"; then
+            log_info "Appending nvm initialization to $shell_rc"
+            {
+                echo ''
+                echo 'export NVM_DIR="$HOME/.nvm"'
+                echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm'
+            } >> "$shell_rc"
+        fi
+    else
+        log_info "$shell_rc does not exist, creating it with nvm initialization."
+        echo 'export NVM_DIR="$HOME/.nvm"' > "$shell_rc"
+        echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm' >> "$shell_rc"
+    fi
+}
+
 
 ########################################
 # Install Yarn
@@ -271,8 +260,6 @@ main() {
     local os
     os=$(detect_os)
 
-    # fix_windows_path
-
     install_dependencies "$os"
     install_rust
     install_solana_cli "$os"
@@ -283,8 +270,11 @@ main() {
 
     ensure_nvm_in_shell
 
-    # Refresh the shell session to load any new configurations
-    exec "$SHELL" -l
+    if grep -qi "microsoft" /proc/version 2>/dev/null; then
+        exec /bin/bash --login
+    else
+        exec "$SHELL" -l
+    fi
 }
 
 main "$@"
