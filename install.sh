@@ -118,8 +118,17 @@ install_solana_cli() {
 # Install Anchor CLI
 ########################################
 install_anchor_cli() {
+    if ! command -v avm >/dev/null 2>&1; then
+        log_info "AVM is not installed. Installing AVM..."
+        cargo install --git https://github.com/coral-xyz/anchor avm
+    fi
+
     if command -v anchor >/dev/null 2>&1; then
         log_info "Anchor CLI is already installed. Updating..."
+                if ! command -v avm >/dev/null 2>&1; then
+            log_info "AVM is not installed. Installing AVM..."
+            cargo install --git https://github.com/coral-xyz/anchor avm
+        fi
         avm update
     else
         log_info "Installing Anchor CLI..."
