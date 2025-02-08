@@ -195,10 +195,15 @@ install_nvm_and_node() {
     fi
 
     export NVM_DIR="$HOME/.nvm"
+    # Immediately source nvm and bash_completion for the current session
     if [ -s "$NVM_DIR/nvm.sh" ]; then
         . "$NVM_DIR/nvm.sh"
     else
         log_error "nvm not found. Ensure it is installed correctly."
+    fi
+
+    if [ -s "$NVM_DIR/bash_completion" ]; then
+        . "$NVM_DIR/bash_completion"
     fi
 
     if command -v node >/dev/null 2>&1; then
@@ -223,6 +228,7 @@ install_nvm_and_node() {
 
     echo ""
 }
+
 
 ########################################
 # Install Yarn
