@@ -125,9 +125,9 @@ install_anchor_cli() {
 
     if command -v anchor >/dev/null 2>&1; then
         log_info "Anchor CLI is already installed. Updating..."
-                if ! command -v avm >/dev/null 2>&1; then
+        if ! command -v avm >/dev/null 2>&1; then
             log_info "AVM is not installed. Installing AVM..."
-            cargo install --git https://github.com/coral-xyz/anchor avm
+            cargo install --git https://github.com/coral-xyz/anchor avm --force
         fi
         avm update
     else
