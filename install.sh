@@ -12,17 +12,17 @@ log_error() {
     printf "[ERROR] %s\n" "$1" >&2
 }
 
-########################################
-# Remove Windows Paths in WSL Environment
-########################################
-fix_windows_path() {
-    # Check for WSL by looking for "microsoft" in /proc/version
-    if grep -qi microsoft /proc/version 2>/dev/null; then
-        log_info "WSL environment detected. Removing Windows paths from PATH."
-        export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '^/mnt/c' | paste -sd ':' -)
-        log_info "New PATH: $PATH"
-    fi
-}
+# ########################################
+# # Remove Windows Paths in WSL Environment
+# ########################################
+# fix_windows_path() {
+#     # Check for WSL by looking for "microsoft" in /proc/version
+#     if grep -qi microsoft /proc/version 2>/dev/null; then
+#         log_info "WSL environment detected. Removing Windows paths from PATH."
+#         export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '^/mnt/c' | paste -sd ':' -)
+#         log_info "New PATH: $PATH"
+#     fi
+# }
 
 ########################################
 # Append nvm Initialization to the Correct Shell RC File
@@ -271,7 +271,7 @@ main() {
     local os
     os=$(detect_os)
 
-    fix_windows_path
+    # fix_windows_path
 
     install_dependencies "$os"
     install_rust
