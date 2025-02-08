@@ -88,6 +88,8 @@ install_rust() {
 # Install Solana CLI
 ########################################
 install_solana_cli() {
+    local os="$1"
+
     if command -v solana >/dev/null 2>&1; then
         log_info "Solana CLI is already installed. Updating..."
         agave-install update
@@ -101,6 +103,12 @@ install_solana_cli() {
         solana --version
     else
         log_error "Solana CLI installation failed."
+    fi
+
+    if [[ "$os" == "Linux" ]]; then
+        export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+    elif [[ "$os" == "Darwin" ]]; then
+        echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' >> ~/.zshrc
     fi
 
     echo ""
@@ -214,7 +222,7 @@ main() {
 
     install_dependencies "$os"
     install_rust
-    install_solana_cli
+    install_solana_cli "$os"
     install_anchor_cli
     install_nvm_and_node
     install_yarn
