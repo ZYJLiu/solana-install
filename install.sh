@@ -189,35 +189,6 @@ install_nvm_and_node() {
     echo ""
 }
 
-########################################
-# Append nvm Initialization to the Correct Shell RC File
-########################################
-ensure_nvm_in_shell() {
-    local shell_rc=""
-    if [[ "$SHELL" == *"zsh"* ]]; then
-        shell_rc="$HOME/.zshrc"
-    elif [[ "$SHELL" == *"bash"* ]]; then
-        shell_rc="$HOME/.bashrc"
-    else
-        shell_rc="$HOME/.profile"
-    fi
-
-    if [ -f "$shell_rc" ]; then
-        if ! grep -q 'export NVM_DIR="$HOME/.nvm"' "$shell_rc"; then
-            log_info "Appending nvm initialization to $shell_rc"
-            {
-                echo ''
-                echo 'export NVM_DIR="$HOME/.nvm"'
-                echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm'
-            } >> "$shell_rc"
-        fi
-    else
-        log_info "$shell_rc does not exist, creating it with nvm initialization."
-        echo 'export NVM_DIR="$HOME/.nvm"' > "$shell_rc"
-        echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm' >> "$shell_rc"
-    fi
-}
-
 
 ########################################
 # Install Yarn
@@ -254,6 +225,63 @@ print_versions() {
 }
 
 ########################################
+# Append nvm Initialization to the Correct Shell RC File
+########################################
+ensure_nvm_in_shell() {
+    local shell_rc=""
+    if [[ "$SHELL" == *"zsh"* ]]; then
+        shell_rc="$HOME/.zshrc"
+    elif [[ "$SHELL" == *"bash"* ]]; then
+        shell_rc="$HOME/.bashrc"
+    else
+        shell_rc="$HOME/.profile"
+    fi
+
+    if [ -f "$shell_rc" ]; then
+        if ! grep -q 'export NVM_DIR="$HOME/.nvm"' "$shell_rc"; then
+            log_info "Appending nvm initialization to $shell_rc"
+            {
+                echo ''
+                echo 'export NVM_DIR="$HOME/.nvm"'
+                echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm'
+            } >> "$shell_rc"
+        fi
+    else
+        log_info "$shell_rc does not exist, creating it with nvm initialization."
+        echo 'export NVM_DIR="$HOME/.nvm"' > "$shell_rc"
+        echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm' >> "$shell_rc"
+    fi
+}
+
+reload_shell_rc() {
+    if [[ "$SHELL" == *"bash"* ]]; then
+        if [ -f "$HOME/.bashrc" ]; then
+            log_info "Sourcing ~/.bashrc"
+            . "$HOME/.bashrc"
+        else
+            log_error "~/.bashrc not found."
+        fi
+    elif [[ "$SHELL" == *"zsh"* ]]; then
+        if [ -f "$HOME/.zshrc" ]; then
+            log_info "Sourcing ~/.zshrc"
+            . "$HOME/.zshrc"
+        else
+            log_error "~/.zshrc not found."
+        fi
+    elif [[ "$SHELL" == *"fish"* ]]; then
+        if [ -f "$HOME/.config/fish/config.fish" ]; then
+            log_info "Sourcing Fish configuration"
+            # For fish, we run a fish command to source the config
+            fish -c "source $HOME/.config/fish/config.fish"
+        else
+            log_error "Fish configuration not found."
+        fi
+    else
+        log_info "Shell not recognized. Please source your shell configuration manually."
+    fi
+}
+
+########################################
 # Main Execution Flow
 ########################################
 main() {
@@ -266,9 +294,11 @@ main() {
     install_anchor_cli
     install_nvm_and_node
     install_yarn
-    print_versions
 
     ensure_nvm_in_shell
+    reload_shell_rc
+
+    print_versions
 
     echo "Installation complete. Please restart your terminal to apply all changes."
 
