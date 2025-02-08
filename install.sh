@@ -270,11 +270,9 @@ main() {
 
     ensure_nvm_in_shell
 
-    if grep -qi "microsoft" /proc/version 2>/dev/null; then
-        exec /bin/bash --login
-    else
-        exec "$SHELL" -l
-    fi
+    echo "Installation complete. Please restart your terminal to apply all changes."
+
+    exec "$SHELL" -l
 }
 
 main "$@"
